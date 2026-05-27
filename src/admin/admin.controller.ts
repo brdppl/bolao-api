@@ -14,6 +14,11 @@ export class AdminController {
     private betsService: BetsService,
   ) {}
 
+  @Post('seed-matches')
+  seedMatches() {
+    return this.matchesService.seedMatches();
+  }
+
   @Post('sync-fixtures')
   syncFixtures() {
     return this.matchesService.syncFixtures();
