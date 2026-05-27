@@ -33,6 +33,15 @@ export class UsersService {
       .lean();
   }
 
+  async promoteToAdmin(email: string): Promise<{ name: string; email: string; role: string } | null> {
+    const user = await this.userModel.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { $set: { role: 'admin' } },
+      { new: true },
+    ).select('name email role');
+    return user ? { name: user.name, email: user.email, role: user.role } : null;
+  }
+
   async incrementBetCount(userId: string): Promise<void> {
     await this.userModel.findByIdAndUpdate(userId, { $inc: { totalBets: 1 } });
   }
