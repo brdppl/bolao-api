@@ -60,4 +60,31 @@ export class UsersService {
       },
     });
   }
+
+  async getAllUsers(): Promise<Omit<UserDocument, 'password'>[]> {
+    return this.userModel
+      .find()
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async setActive(userId: string, active: boolean): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, { $set: { active } });
+  }
+
+  async setRole(userId: string, role: 'user' | 'admin'): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, { $set: { role } });
+  }
+
+  async countAll(): Promise<number> {
+    return this.userModel.countDocuments();
+  }
+
+  async sumTotalBets(): Promise<number> {
+    const result = await this.userModel.aggregate([
+      { $group: { _id: null, total: { $sum: '$totalBets' } } },
+    ]);
+    return result[0]?.total ?? 0;
+  }
 }

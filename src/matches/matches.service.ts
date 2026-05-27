@@ -1,9 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Match, MatchDocument, MatchPhase, MatchStatus } from './match.schema';
 import { FootballApiService } from '../football-api/football-api.service';
+
+export const MATCH_FINISHED_EVENT = 'match.finished';
 
 const PHASE_MAP: Record<string, MatchPhase> = {
   'Group Stage': MatchPhase.GROUP,
@@ -19,9 +22,14 @@ const PHASE_MAP: Record<string, MatchPhase> = {
 export class MatchesService {
   private readonly logger = new Logger(MatchesService.name);
 
+  // Copa 2026: 11 jun – 19 jul
+  private readonly COPA_START = new Date('2026-06-11T00:00:00Z');
+  private readonly COPA_END   = new Date('2026-07-20T00:00:00Z');
+
   constructor(
     @InjectModel(Match.name) private matchModel: Model<MatchDocument>,
     private footballApi: FootballApiService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(): Promise<MatchDocument[]> {
@@ -54,6 +62,17 @@ export class MatchesService {
 
   async countMatches(): Promise<number> {
     return this.matchModel.countDocuments();
+  }
+
+  async getStats(): Promise<{ total: number; finished: number; live: number; scheduled: number; processed: number }> {
+    const [total, finished, live, scheduled, processed] = await Promise.all([
+      this.matchModel.countDocuments(),
+      this.matchModel.countDocuments({ status: MatchStatus.FINISHED }),
+      this.matchModel.countDocuments({ status: MatchStatus.LIVE }),
+      this.matchModel.countDocuments({ status: MatchStatus.SCHEDULED }),
+      this.matchModel.countDocuments({ resultsProcessed: true }),
+    ]);
+    return { total, finished, live, scheduled, processed };
   }
 
   async seedMatches(): Promise<{ created: number; skipped: boolean }> {
@@ -175,21 +194,45 @@ export class MatchesService {
     return { created: matches.length, skipped: false };
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
-  async syncFixtures(): Promise<void> {
+  private isDuringCopa(): boolean {
+    const now = new Date();
+    return now >= this.COPA_START && now <= this.COPA_END;
+  }
+
+  // A cada 5 minutos durante a Copa para capturar placares ao vivo
+  @Cron('*/5 * * * *')
+  async cronSync(): Promise<void> {
+    if (this.isDuringCopa()) {
+      await this.syncFixtures();
+    }
+  }
+
+  // A cada hora fora da Copa (mantém dados atualizados no geral)
+  @Cron('0 * * * *')
+  async cronSyncOffSeason(): Promise<void> {
+    if (!this.isDuringCopa()) {
+      await this.syncFixtures();
+    }
+  }
+
+  async syncFixtures(): Promise<{ synced: number; finished: number }> {
     this.logger.log('Syncing fixtures from API...');
     const fixtures = await this.footballApi.getFixtures();
+    let finishedCount = 0;
 
     for (const f of fixtures) {
       const fixture = f.fixture;
-      const teams = f.teams;
-      const goals = f.goals;
-      const league = f.league;
+      const teams   = f.teams;
+      const goals   = f.goals;
+      const league  = f.league;
 
-      const status = this.mapStatus(fixture.status.short);
+      const newStatus = this.mapStatus(fixture.status.short);
       const phase = PHASE_MAP[league.round] ?? MatchPhase.GROUP;
 
-      await this.matchModel.findOneAndUpdate(
+      const existing = await this.matchModel.findOne({ apiMatchId: fixture.id });
+      const wasFinished = existing?.status === MatchStatus.FINISHED;
+
+      const updated = await this.matchModel.findOneAndUpdate(
         { apiMatchId: fixture.id },
         {
           apiMatchId: fixture.id,
@@ -198,7 +241,7 @@ export class MatchesService {
           homeTeamFlag: teams.home.logo,
           awayTeamFlag: teams.away.logo,
           kickoff: new Date(fixture.date),
-          status,
+          status: newStatus,
           phase,
           group: league.round,
           homeScore: goals.home,
@@ -206,15 +249,49 @@ export class MatchesService {
         },
         { upsert: true, new: true },
       );
+
+      // Emite evento apenas uma vez quando o jogo termina
+      if (!wasFinished && newStatus === MatchStatus.FINISHED && updated && !updated.resultsProcessed) {
+        this.logger.log(`Match finished: ${updated.homeTeam} vs ${updated.awayTeam}`);
+        this.eventEmitter.emit(MATCH_FINISHED_EVENT, updated._id.toString());
+        finishedCount++;
+      }
     }
 
-    this.logger.log(`Synced ${fixtures.length} fixtures`);
+    this.logger.log(`Synced ${fixtures.length} fixtures, ${finishedCount} newly finished`);
+    return { synced: fixtures.length, finished: finishedCount };
+  }
+
+  async updateScore(
+    matchId: string,
+    homeScore: number,
+    awayScore: number,
+    finished = true,
+  ): Promise<MatchDocument> {
+    const match = await this.matchModel.findById(matchId);
+    if (!match) throw new NotFoundException('Jogo não encontrado');
+
+    const wasFinished = match.status === MatchStatus.FINISHED;
+    const newStatus = finished ? MatchStatus.FINISHED : MatchStatus.LIVE;
+
+    match.homeScore = homeScore;
+    match.awayScore = awayScore;
+    match.status = newStatus;
+    await match.save();
+
+    // Dispara processamento se acabou de terminar e ainda não foi processado
+    if (!wasFinished && finished && !match.resultsProcessed) {
+      this.logger.log(`Manual finish: ${match.homeTeam} vs ${match.awayTeam} (${homeScore}x${awayScore})`);
+      this.eventEmitter.emit(MATCH_FINISHED_EVENT, match._id.toString());
+    }
+
+    return match;
   }
 
   private mapStatus(short: string): MatchStatus {
-    const live = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'];
+    const live     = ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'];
     const finished = ['FT', 'AET', 'PEN'];
-    if (live.includes(short)) return MatchStatus.LIVE;
+    if (live.includes(short))     return MatchStatus.LIVE;
     if (finished.includes(short)) return MatchStatus.FINISHED;
     return MatchStatus.SCHEDULED;
   }

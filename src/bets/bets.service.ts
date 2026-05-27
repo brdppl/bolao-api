@@ -1,17 +1,21 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Bet, BetDocument } from './bet.schema';
-import { MatchesService } from '../matches/matches.service';
+import { MatchesService, MATCH_FINISHED_EVENT } from '../matches/matches.service';
 import { UsersService } from '../users/users.service';
 import { MatchStatus } from '../matches/match.schema';
 
 @Injectable()
 export class BetsService {
+  private readonly logger = new Logger(BetsService.name);
+
   constructor(
     @InjectModel(Bet.name) private betModel: Model<BetDocument>,
     private matchesService: MatchesService,
@@ -74,6 +78,12 @@ export class BetsService {
       }
     }
     return map;
+  }
+
+  @OnEvent(MATCH_FINISHED_EVENT)
+  async onMatchFinished(matchId: string): Promise<void> {
+    this.logger.log(`Auto-processing bets for match ${matchId}`);
+    await this.processMatchResults(matchId);
   }
 
   async processMatchResults(matchId: string): Promise<void> {
