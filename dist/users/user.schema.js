@@ -21,6 +21,7 @@ let User = class User {
     correctWinners;
     totalBets;
     active;
+    paid;
 };
 exports.User = User;
 __decorate([
@@ -59,6 +60,10 @@ __decorate([
     (0, mongoose_1.Prop)({ default: true }),
     __metadata("design:type", Boolean)
 ], User.prototype, "active", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ default: false }),
+    __metadata("design:type", Boolean)
+], User.prototype, "paid", void 0);
 exports.User = User = __decorate([
     (0, mongoose_1.Schema)({ timestamps: true })
 ], User);

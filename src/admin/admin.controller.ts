@@ -26,6 +26,10 @@ class SetActiveDto {
   @IsBoolean() active: boolean;
 }
 
+class SetPaidDto {
+  @IsBoolean() paid: boolean;
+}
+
 class SetRoleDto {
   @IsString() @IsIn(['user', 'admin']) role: 'user' | 'admin';
 }
@@ -119,6 +123,14 @@ export class AdminController {
   @Roles('admin')
   async setUserRole(@Param('userId') userId: string, @Body() dto: SetRoleDto) {
     await this.usersService.setRole(userId, dto.role);
+    return { ok: true };
+  }
+
+  @Patch('users/:userId/paid')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  async setUserPaid(@Param('userId') userId: string, @Body() dto: SetPaidDto) {
+    await this.usersService.setPaid(userId, dto.paid);
     return { ok: true };
   }
 }

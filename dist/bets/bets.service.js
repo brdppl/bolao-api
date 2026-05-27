@@ -11,19 +11,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var BetsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BetsService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const bet_schema_1 = require("./bet.schema");
 const matches_service_1 = require("../matches/matches.service");
 const users_service_1 = require("../users/users.service");
 const match_schema_1 = require("../matches/match.schema");
-let BetsService = class BetsService {
+let BetsService = BetsService_1 = class BetsService {
     betModel;
     matchesService;
     usersService;
+    logger = new common_1.Logger(BetsService_1.name);
     constructor(betModel, matchesService, usersService) {
         this.betModel = betModel;
         this.matchesService = matchesService;
@@ -81,6 +84,10 @@ let BetsService = class BetsService {
         }
         return map;
     }
+    async onMatchFinished(matchId) {
+        this.logger.log(`Auto-processing bets for match ${matchId}`);
+        await this.processMatchResults(matchId);
+    }
     async processMatchResults(matchId) {
         const match = await this.matchesService.findById(matchId);
         if (!match || match.homeScore === null || match.awayScore === null)
@@ -111,7 +118,13 @@ let BetsService = class BetsService {
     }
 };
 exports.BetsService = BetsService;
-exports.BetsService = BetsService = __decorate([
+__decorate([
+    (0, event_emitter_1.OnEvent)(matches_service_1.MATCH_FINISHED_EVENT),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], BetsService.prototype, "onMatchFinished", null);
+exports.BetsService = BetsService = BetsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(bet_schema_1.Bet.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,

@@ -6,6 +6,7 @@ export declare class BetsService {
     private betModel;
     private matchesService;
     private usersService;
+    private readonly logger;
     constructor(betModel: Model<BetDocument>, matchesService: MatchesService, usersService: UsersService);
     placeBet(userId: string, matchId: string, homeScore: number, awayScore: number): Promise<import("mongoose").Document<unknown, {}, BetDocument, {}, import("mongoose").DefaultSchemaOptions> & Bet & import("mongoose").Document<import("mongoose").Types.ObjectId, any, any, Record<string, any>, {}> & Required<{
         _id: import("mongoose").Types.ObjectId;
@@ -28,6 +29,7 @@ export declare class BetsService {
         _id: string;
         name: string;
     }[]>>;
+    onMatchFinished(matchId: string): Promise<void>;
     processMatchResults(matchId: string): Promise<void>;
     private calculatePoints;
 }

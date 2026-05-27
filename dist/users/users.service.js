@@ -77,6 +77,17 @@ let UsersService = class UsersService {
             .sort({ totalPoints: -1, exactScores: -1, correctWinners: -1 })
             .lean();
     }
+    async getPaidRanking() {
+        return this.userModel
+            .find({ active: true, role: 'user', paid: true })
+            .select('-password')
+            .sort({ totalPoints: -1, exactScores: -1, correctWinners: -1 })
+            .lean();
+    }
+    async promoteToAdmin(email) {
+        const user = await this.userModel.findOneAndUpdate({ email: email.toLowerCase() }, { $set: { role: 'admin' } }, { new: true }).select('name email role');
+        return user ? { name: user.name, email: user.email, role: user.role } : null;
+    }
     async incrementBetCount(userId) {
         await this.userModel.findByIdAndUpdate(userId, { $inc: { totalBets: 1 } });
     }
@@ -88,6 +99,31 @@ let UsersService = class UsersService {
                 correctWinners: isCorrectWinner ? 1 : 0,
             },
         });
+    }
+    async getAllUsers() {
+        return this.userModel
+            .find()
+            .select('-password')
+            .sort({ createdAt: -1 })
+            .lean();
+    }
+    async setActive(userId, active) {
+        await this.userModel.findByIdAndUpdate(userId, { $set: { active } });
+    }
+    async setRole(userId, role) {
+        await this.userModel.findByIdAndUpdate(userId, { $set: { role } });
+    }
+    async setPaid(userId, paid) {
+        await this.userModel.findByIdAndUpdate(userId, { $set: { paid } });
+    }
+    async countAll() {
+        return this.userModel.countDocuments();
+    }
+    async sumTotalBets() {
+        const result = await this.userModel.aggregate([
+            { $group: { _id: null, total: { $sum: '$totalBets' } } },
+        ]);
+        return result[0]?.total ?? 0;
     }
 };
 exports.UsersService = UsersService;

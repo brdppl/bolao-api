@@ -21,6 +21,9 @@ let RankingsController = class RankingsController {
     getRanking() {
         return this.usersService.getRanking();
     }
+    getPaidRanking() {
+        return this.usersService.getPaidRanking();
+    }
 };
 exports.RankingsController = RankingsController;
 __decorate([
@@ -29,6 +32,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], RankingsController.prototype, "getRanking", null);
+__decorate([
+    (0, common_1.Get)('paid'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], RankingsController.prototype, "getPaidRanking", null);
 exports.RankingsController = RankingsController = __decorate([
     (0, common_1.Controller)('rankings'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

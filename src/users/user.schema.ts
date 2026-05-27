@@ -31,6 +31,9 @@ export class User {
 
   @Prop({ default: true })
   active: boolean;
+
+  @Prop({ default: false })
+  paid: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

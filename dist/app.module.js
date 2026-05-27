@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const mongoose_1 = require("@nestjs/mongoose");
 const schedule_1 = require("@nestjs/schedule");
+const event_emitter_1 = require("@nestjs/event-emitter");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const matches_module_1 = require("./matches/matches.module");
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
                 }),
             }),
             schedule_1.ScheduleModule.forRoot(),
+            event_emitter_1.EventEmitterModule.forRoot(),
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             matches_module_1.MatchesModule,

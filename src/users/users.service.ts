@@ -33,6 +33,14 @@ export class UsersService {
       .lean();
   }
 
+  async getPaidRanking(): Promise<UserDocument[]> {
+    return this.userModel
+      .find({ active: true, role: 'user', paid: true })
+      .select('-password')
+      .sort({ totalPoints: -1, exactScores: -1, correctWinners: -1 })
+      .lean();
+  }
+
   async promoteToAdmin(email: string): Promise<{ name: string; email: string; role: string } | null> {
     const user = await this.userModel.findOneAndUpdate(
       { email: email.toLowerCase() },
@@ -75,6 +83,10 @@ export class UsersService {
 
   async setRole(userId: string, role: 'user' | 'admin'): Promise<void> {
     await this.userModel.findByIdAndUpdate(userId, { $set: { role } });
+  }
+
+  async setPaid(userId: string, paid: boolean): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, { $set: { paid } });
   }
 
   async countAll(): Promise<number> {

@@ -11,4 +11,9 @@ export class RankingsController {
   getRanking() {
     return this.usersService.getRanking();
   }
+
+  @Get('paid')
+  getPaidRanking() {
+    return this.usersService.getPaidRanking();
+  }
 }
