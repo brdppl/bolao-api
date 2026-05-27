@@ -128,14 +128,41 @@ export class MatchesService {
     }
 
     const KO = [
-      ...Array.from({length:16}, (_,i) => ({ d:`2026-06-${28+Math.floor(i/3)}`, t:['13:00','17:00','21:00'][i%3], ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' })),
-      ...Array.from({length:8},  (_,i) => ({ d:`2026-07-0${4+Math.floor(i/2)}`, t:['13:00','17:00'][i%2],          ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' })),
+      // Rodada de 32 — 28 jun a 3 jul (datas explícitas, junho só tem 30 dias)
+      { d:'2026-06-28', t:'13:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-28', t:'17:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-28', t:'21:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-29', t:'13:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-29', t:'17:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-29', t:'21:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-30', t:'13:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-30', t:'17:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-06-30', t:'21:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-01', t:'13:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-01', t:'17:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-01', t:'21:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-02', t:'13:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-02', t:'17:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-02', t:'21:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      { d:'2026-07-03', t:'21:00', ph:MatchPhase.ROUND_OF_32, g:'Rodada de 32' },
+      // Oitavas de Final — 4 a 7 jul
+      { d:'2026-07-04', t:'13:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-04', t:'17:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-05', t:'13:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-05', t:'17:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-06', t:'13:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-06', t:'17:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-07', t:'13:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      { d:'2026-07-07', t:'17:00', ph:MatchPhase.ROUND_OF_16, g:'Oitavas de Final' },
+      // Quartas de Final — 9 a 11 jul
       { d:'2026-07-09', t:'16:00', ph:MatchPhase.QUARTER_FINAL, g:'Quartas de Final' },
       { d:'2026-07-10', t:'13:00', ph:MatchPhase.QUARTER_FINAL, g:'Quartas de Final' },
       { d:'2026-07-11', t:'13:00', ph:MatchPhase.QUARTER_FINAL, g:'Quartas de Final' },
       { d:'2026-07-11', t:'17:00', ph:MatchPhase.QUARTER_FINAL, g:'Quartas de Final' },
+      // Semifinais — 14 e 15 jul
       { d:'2026-07-14', t:'16:00', ph:MatchPhase.SEMI_FINAL, g:'Semifinal' },
       { d:'2026-07-15', t:'16:00', ph:MatchPhase.SEMI_FINAL, g:'Semifinal' },
+      // 3º Lugar e Final
       { d:'2026-07-18', t:'16:00', ph:MatchPhase.THIRD_PLACE, g:'3º Lugar' },
       { d:'2026-07-19', t:'16:00', ph:MatchPhase.FINAL, g:'Final' },
     ];
