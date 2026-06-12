@@ -62,19 +62,27 @@ export class BetsService {
       .lean();
   }
 
-  async getParticipants(): Promise<Record<string, { _id: string; name: string }[]>> {
+  async getParticipants(): Promise<Record<string, { _id: string; name: string; homeScore: number; awayScore: number; points: number; processed: boolean; resultType: string | null }[]>> {
     const bets = await this.betModel
       .find({})
       .populate('user', 'name')
-      .select('match user')
+      .select('match user homeScore awayScore points processed resultType')
       .lean() as any[];
 
-    const map: Record<string, { _id: string; name: string }[]> = {};
+    const map: Record<string, any[]> = {};
     for (const bet of bets) {
       const matchId = bet.match.toString();
       if (!map[matchId]) map[matchId] = [];
       if (bet.user?._id && bet.user?.name) {
-        map[matchId].push({ _id: bet.user._id.toString(), name: bet.user.name });
+        map[matchId].push({
+          _id: bet.user._id.toString(),
+          name: bet.user.name,
+          homeScore: bet.homeScore,
+          awayScore: bet.awayScore,
+          points: bet.points,
+          processed: bet.processed,
+          resultType: bet.resultType ?? null,
+        });
       }
     }
     return map;

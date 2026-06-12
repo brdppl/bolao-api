@@ -28,6 +28,11 @@ export declare class BetsService {
     getParticipants(): Promise<Record<string, {
         _id: string;
         name: string;
+        homeScore: number;
+        awayScore: number;
+        points: number;
+        processed: boolean;
+        resultType: string | null;
     }[]>>;
     onMatchFinished(matchId: string): Promise<void>;
     processMatchResults(matchId: string): Promise<void>;

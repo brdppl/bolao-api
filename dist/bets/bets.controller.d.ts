@@ -21,6 +21,11 @@ export declare class BetsController {
     getParticipants(): Promise<Record<string, {
         _id: string;
         name: string;
+        homeScore: number;
+        awayScore: number;
+        points: number;
+        processed: boolean;
+        resultType: string | null;
     }[]>>;
     getBetsForMatch(matchId: string): Promise<(import("./bet.schema").Bet & import("mongoose").Document<import("mongoose").Types.ObjectId, any, any, Record<string, any>, {}> & Required<{
         _id: import("mongoose").Types.ObjectId;

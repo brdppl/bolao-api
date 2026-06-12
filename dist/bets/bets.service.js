@@ -71,7 +71,7 @@ let BetsService = BetsService_1 = class BetsService {
         const bets = await this.betModel
             .find({})
             .populate('user', 'name')
-            .select('match user')
+            .select('match user homeScore awayScore points processed resultType')
             .lean();
         const map = {};
         for (const bet of bets) {
@@ -79,7 +79,15 @@ let BetsService = BetsService_1 = class BetsService {
             if (!map[matchId])
                 map[matchId] = [];
             if (bet.user?._id && bet.user?.name) {
-                map[matchId].push({ _id: bet.user._id.toString(), name: bet.user.name });
+                map[matchId].push({
+                    _id: bet.user._id.toString(),
+                    name: bet.user.name,
+                    homeScore: bet.homeScore,
+                    awayScore: bet.awayScore,
+                    points: bet.points,
+                    processed: bet.processed,
+                    resultType: bet.resultType ?? null,
+                });
             }
         }
         return map;
