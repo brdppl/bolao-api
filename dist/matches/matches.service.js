@@ -49,6 +49,20 @@ let MatchesService = MatchesService_1 = class MatchesService {
     async findById(id) {
         return this.matchModel.findById(id);
     }
+    async findLastResult() {
+        return this.matchModel
+            .findOne({ resultsProcessed: true })
+            .sort({ kickoff: -1 })
+            .lean();
+    }
+    async findLive() {
+        const now = new Date();
+        const windowStart = new Date(now.getTime() - 110 * 60 * 1000);
+        return this.matchModel
+            .find({ kickoff: { $gte: windowStart, $lte: now }, status: { $ne: match_schema_1.MatchStatus.FINISHED } })
+            .sort({ kickoff: 1 })
+            .lean();
+    }
     async findUpcoming(limit = 5) {
         return this.matchModel
             .find({ status: match_schema_1.MatchStatus.SCHEDULED, kickoff: { $gte: new Date() } })

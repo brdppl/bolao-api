@@ -70,6 +70,9 @@ let UsersService = class UsersService {
     async findById(id) {
         return this.userModel.findById(id);
     }
+    async findByIdSafe(id) {
+        return this.userModel.findById(id).select('-password').lean();
+    }
     async getRanking() {
         return this.userModel
             .find({ active: true, role: 'user' })

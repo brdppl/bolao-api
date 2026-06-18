@@ -13,6 +13,8 @@ export declare class MatchesService {
     constructor(matchModel: Model<MatchDocument>, footballApi: FootballApiService, eventEmitter: EventEmitter2);
     findAll(): Promise<MatchDocument[]>;
     findById(id: string): Promise<MatchDocument | null>;
+    findLastResult(): Promise<MatchDocument | null>;
+    findLive(): Promise<MatchDocument[]>;
     findUpcoming(limit?: number): Promise<MatchDocument[]>;
     findByPhase(phase: MatchPhase): Promise<MatchDocument[]>;
     findFinishedUnprocessed(): Promise<MatchDocument[]>;

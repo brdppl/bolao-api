@@ -1,11 +1,16 @@
 import { Model } from 'mongoose';
-import { UserDocument } from './user.schema';
+import { User, UserDocument } from './user.schema';
 export declare class UsersService {
     private userModel;
     constructor(userModel: Model<UserDocument>);
     create(name: string, email: string, password: string, role?: string): Promise<UserDocument>;
     findByEmail(email: string): Promise<UserDocument | null>;
     findById(id: string): Promise<UserDocument | null>;
+    findByIdSafe(id: string): Promise<(User & import("mongoose").Document<import("mongoose").Types.ObjectId, any, any, Record<string, any>, {}> & Required<{
+        _id: import("mongoose").Types.ObjectId;
+    }> & {
+        __v: number;
+    }) | null>;
     getRanking(): Promise<UserDocument[]>;
     getPaidRanking(): Promise<UserDocument[]>;
     promoteToAdmin(email: string): Promise<{

@@ -1,4 +1,5 @@
 import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 declare class RegisterDto {
     name: string;
     email: string;
@@ -11,7 +12,8 @@ declare class LoginDto {
 }
 export declare class AuthController {
     private authService;
-    constructor(authService: AuthService);
+    private usersService;
+    constructor(authService: AuthService, usersService: UsersService);
     register(dto: RegisterDto): Promise<{
         token: string;
         user: any;
@@ -20,5 +22,10 @@ export declare class AuthController {
         token: string;
         user: any;
     }>;
+    me(user: any): Promise<(import("../users/user.schema").User & import("mongoose").Document<import("mongoose").Types.ObjectId, any, any, Record<string, any>, {}> & Required<{
+        _id: import("mongoose").Types.ObjectId;
+    }> & {
+        __v: number;
+    }) | null>;
 }
 export {};

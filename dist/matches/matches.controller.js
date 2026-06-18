@@ -25,6 +25,12 @@ let MatchesController = class MatchesController {
     findAll() {
         return this.matchesService.findAll();
     }
+    findLastResult() {
+        return this.matchesService.findLastResult();
+    }
+    findLive() {
+        return this.matchesService.findLive();
+    }
     findUpcoming() {
         return this.matchesService.findUpcoming(10);
     }
@@ -42,6 +48,18 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], MatchesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('last-result'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], MatchesController.prototype, "findLastResult", null);
+__decorate([
+    (0, common_1.Get)('live'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], MatchesController.prototype, "findLive", null);
 __decorate([
     (0, common_1.Get)('upcoming'),
     __metadata("design:type", Function),

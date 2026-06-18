@@ -13,6 +13,16 @@ export class MatchesController {
     return this.matchesService.findAll();
   }
 
+  @Get('last-result')
+  findLastResult() {
+    return this.matchesService.findLastResult();
+  }
+
+  @Get('live')
+  findLive() {
+    return this.matchesService.findLive();
+  }
+
   @Get('upcoming')
   findUpcoming() {
     return this.matchesService.findUpcoming(10);

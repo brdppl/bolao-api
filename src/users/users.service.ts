@@ -25,6 +25,10 @@ export class UsersService {
     return this.userModel.findById(id);
   }
 
+  async findByIdSafe(id: string) {
+    return this.userModel.findById(id).select('-password').lean();
+  }
+
   async getRanking(): Promise<UserDocument[]> {
     return this.userModel
       .find({ active: true, role: 'user' })
